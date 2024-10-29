@@ -143,9 +143,9 @@ public class BeeViewer extends SwingViewer {
 			else if (arg0 instanceof Hornet) {
 				if (trailMode) {
 					final Point p1 = b.getPreviousPosition();
-					g.fillOval(p1.x, p1.y, 50, 50);
+					g.fillRect(p1.x, p1.y, 20, 20);
 				} else {
-					g.fillOval(p.x, p.y, 50, 50);
+					g.fillRect(p.x, p.y, 20, 20);
 				}
 			}
 			else {

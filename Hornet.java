@@ -69,6 +69,7 @@ public class Hornet extends AbstractBee {
 	requestRole(COMMUNITY, SIMU_GROUP, HORNET_ROLE, null);
 	//!!! we have to add this second role just for the viewer
 	requestRole(COMMUNITY, SIMU_GROUP, BEE_ROLE, null);
+	broadcastMessage(COMMUNITY, SIMU_GROUP, FOLLOWER_ROLE, new ObjectMessage<>(myInformation));
     }
 
     @Override
