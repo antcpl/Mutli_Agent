@@ -42,6 +42,10 @@ public abstract class AbstractBee extends AbstractAgent {
     public AbstractBee() {
 	myInformation = new BeeInformation();
     }
+    
+    public AbstractBee(boolean testHornet) {
+    	myInformation = new BeeInformation(testHornet);
+        }
 
     /**
      * 
@@ -107,13 +111,28 @@ class BeeInformation {
 
     private final Point currentPosition, previousPosition;
     private Color beeColor;
+    private boolean testHornet=false;
 
     public BeeInformation() {
 	currentPosition = new Point();
 	previousPosition = new Point();
 	beeColor = Color.getHSBColor(AbstractBee.generator.nextFloat(), 1.0f, 1.0f);
     }
+    
+    public BeeInformation(boolean test_hornet) {
+    	currentPosition = new Point();
+    	previousPosition = new Point();
+    	beeColor = Color.getHSBColor(AbstractBee.generator.nextFloat(), 1.0f, 1.0f);
+    	testHornet=true;
+        }
 
+    /**
+     * @return the testHornet value
+     */
+    public boolean getTestHornet() {
+	return testHornet;
+    }
+    
     /**
      * @return the currentPosition
      */

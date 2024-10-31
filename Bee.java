@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 import madkit.kernel.AgentAddress;
+import madkit.kernel.Message;
+import madkit.message.IntegerMessage;
 import madkit.message.ObjectMessage;
 
 /**
@@ -61,6 +63,7 @@ public class Bee extends AbstractBee {
 		if (m == null) {
 			return;
 		}
+
 		// if a bee get a message and this is a message from its leader then the leader
 		// is quiting
 		// so we reset the leader infos
@@ -68,7 +71,7 @@ public class Bee extends AbstractBee {
 			leader = null;
 			leaderInfo = null;
 		}
-		else if (m.getSender().getRole()==HORNET_ROLE) {
+		else if(m.getContent().getTestHornet()) {
 			newHornetInfos(m);
 		}
 		// if it gets a message and this is not from its leader
@@ -78,7 +81,7 @@ public class Bee extends AbstractBee {
 				// if will follow a new leader
 				followNewLeader(m);
 			else {
-				//if the bee already has a leader set 
+				// if the bee already has a leader set
 				List<AgentAddress> queens = getAgentsWithRole(COMMUNITY, SIMU_GROUP, QUEEN_ROLE);
 				if (queens != null && generator.nextDouble() < (1.0 / queens.size())) {// change leader randomly
 					followNewLeader(m);
@@ -95,7 +98,7 @@ public class Bee extends AbstractBee {
 		leaderInfo = leaderMessage.getContent();
 		myInformation.setBeeColor(leaderInfo.getBeeColor());
 	}
-	
+
 	private void newHornetInfos(ObjectMessage<BeeInformation> hornetMessage) {
 		hornet = hornetMessage.getSender();
 		hornetInfo = hornetMessage.getContent();
@@ -108,52 +111,76 @@ public class Bee extends AbstractBee {
 		int dtx;
 		int dty;
 
-		if (leaderInfo != null) {
-			final Point leaderLocation = leaderInfo.getCurrentPosition();
-			dtx = leaderLocation.x - location.x;
-			dty = leaderLocation.y - location.y;
-		} else {
-			dtx = generator.nextInt(5);
-			dty = generator.nextInt(5);
-			if (generator.nextBoolean()) {
-				dtx = -dtx;
-				dty = -dty;
-			}
-		}
-		
-		int acc = 0;
-		if (beeWorld != null) {
-			acc = beeWorld.getBeeAcceleration().getValue();
-		}
-		int dist = Math.abs(dtx) + Math.abs(dty);
-		if (dist == 0)
-			dist = 1; // avoid dividing by zero
-		// the randomFromRange adds some extra jitter to prevent the bees from flying in
-		// formation
-		
-		if(hornetInfo!=null) {
+		if (hornetInfo != null) {
 			final Point hornetLocation = hornetInfo.getCurrentPosition();
 			dtx = hornetLocation.x - location.x;
 			dty = hornetLocation.y - location.y;
-			if(dtx<1 || dty<1) {
-				dX +=0;
-				dY +=0;
-				//send a message to the hornet
-				
-			}
-			else
-			{
+			if (dtx < 0.05 && dty < 0.05) {
+				dX = 0;
+				dY = 0;
+				// send a message to the hornet
+				sendMessage(hornet, new IntegerMessage(dtx + dty));
+				Message m = nextMessage();
+				if (m != null) {
+					if (m.getSender() == hornet) {
+						getLogger().info(() -> "The bee " + this + "has been killed");
+						killAgent(this);
+					}
+				}
+			} else {
+
+				if (leaderInfo != null) {
+					final Point leaderLocation = leaderInfo.getCurrentPosition();
+					dtx = leaderLocation.x - location.x;
+					dty = leaderLocation.y - location.y;
+				} else {
+					dtx = generator.nextInt(5);
+					dty = generator.nextInt(5);
+					if (generator.nextBoolean()) {
+						dtx = -dtx;
+						dty = -dty;
+					}
+				}
+
+				int acc = 0;
+				if (beeWorld != null) {
+					acc = beeWorld.getBeeAcceleration().getValue();
+				}
+				int dist = Math.abs(dtx) + Math.abs(dty);
+				if (dist == 0)
+					dist = 1; // avoid dividing by zero
+				// the randomFromRange adds some extra jitter to prevent the bees from flying in
+				// formation
 				dX += ((dtx * acc) / dist) + randomFromRange(2);
 				dY += ((dty * acc) / dist) + randomFromRange(2);
 			}
-		}
-		else
-		{
+		} else {
+
+			if (leaderInfo != null) {
+				final Point leaderLocation = leaderInfo.getCurrentPosition();
+				dtx = leaderLocation.x - location.x;
+				dty = leaderLocation.y - location.y;
+			} else {
+				dtx = generator.nextInt(5);
+				dty = generator.nextInt(5);
+				if (generator.nextBoolean()) {
+					dtx = -dtx;
+					dty = -dty;
+				}
+			}
+			int acc = 0;
+			if (beeWorld != null) {
+				acc = beeWorld.getBeeAcceleration().getValue();
+			}
+			int dist = Math.abs(dtx) + Math.abs(dty);
+			if (dist == 0)
+				dist = 1; // avoid dividing by zero
+			// the randomFromRange adds some extra jitter to prevent the bees from flying in
+			// formation
 			dX += ((dtx * acc) / dist) + randomFromRange(2);
 			dY += ((dty * acc) / dist) + randomFromRange(2);
 		}
-		
-		
+
 	}
 
 	@Override
