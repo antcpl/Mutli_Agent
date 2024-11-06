@@ -42,8 +42,8 @@ public class Hornet extends AbstractBee {
 	//private static final long serialVersionUID = -6999130646300839798L;
 	static int border = 20;
 
-	public Hornet() {
-		super(true);
+	public Hornet(boolean testHornet) {
+		super(testHornet);
 	}
 	
 	@Override

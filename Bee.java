@@ -31,6 +31,8 @@ import madkit.kernel.AgentAddress;
 import madkit.kernel.Message;
 import madkit.message.IntegerMessage;
 import madkit.message.ObjectMessage;
+import madkit.kernel.Madkit;
+import madkit.kernel.Agent;
 
 /**
  * @version 2.3
@@ -50,6 +52,10 @@ public class Bee extends AbstractBee {
 		requestRole("buzz", SIMU_GROUP, "follower", null);
 	}
 
+	public Bee(boolean testHornet) {
+		super(testHornet);
+	}
+	
 	/** The "do it" method called by the activator */
 	@Override
 	public void buzz() {
@@ -67,11 +73,19 @@ public class Bee extends AbstractBee {
 		// if a bee get a message and this is a message from its leader then the leader
 		// is quiting
 		// so we reset the leader infos
+		
+		//fonctionne pas que des bees ou des abstractagent
+//		System.out.println(m.getSender().getRole());
+//		System.out.println(m.getSender().getClass().getName());
+//		System.out.println(m.getSender().getClass().getTypeName());
+//		System.out.println(m.getSender().toString());
+		//System.out.println(m.getContent().getHornetBool());
+
 		if (m.getSender().equals(leader)) {// leader quitting
 			leader = null;
 			leaderInfo = null;
 		}
-		else if(m.getContent().getTestHornet()) {
+		else if(m.getContent().getHornetBool()) {
 			newHornetInfos(m);
 		}
 		// if it gets a message and this is not from its leader
@@ -115,18 +129,37 @@ public class Bee extends AbstractBee {
 			final Point hornetLocation = hornetInfo.getCurrentPosition();
 			dtx = hornetLocation.x - location.x;
 			dty = hornetLocation.y - location.y;
-			if (dtx < 0.05 && dty < 0.05) {
+
+			
+//			System.out.println(beeWorld.getWidth()/10);
+//			System.out.println(beeWorld.getHeight()/10);
+//			
+//			System.out.println(Math.abs(dtx));
+//			System.out.println(Math.abs(dty));
+//			
+			
+			if (Math.abs(dtx) < (beeWorld.getWidth()/10) && Math.abs(dty) < (beeWorld.getHeight()/10)) {
 				dX = 0;
 				dY = 0;
+				//System.out.println("coucou");
 				// send a message to the hornet
-				sendMessage(hornet, new IntegerMessage(dtx + dty));
-				Message m = nextMessage();
-				if (m != null) {
-					if (m.getSender() == hornet) {
-						getLogger().info(() -> "The bee " + this + "has been killed");
-						killAgent(this);
-					}
-				}
+//				sendMessage(hornet, new IntegerMessage(dtx + dty));
+//				ObjectMessage<BeeInformation> m = (ObjectMessage<BeeInformation>) nextMessage();
+//				while(m==null) {
+//					m = (ObjectMessage<BeeInformation>) nextMessage();
+//				}
+//				if(m.getContent().getHornetBool() && m) {
+//										
+//				}
+//				else {
+//					
+//				}
+//				if (m != null) {
+//					if (m.getSender() == hornet) {
+//						getLogger().info(() -> "The bee " + this + "has been killed");
+//						killAgent(this);
+//					}
+//				}
 			} else {
 
 				if (leaderInfo != null) {

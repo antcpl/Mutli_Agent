@@ -44,7 +44,7 @@ public class BeeLauncher extends madkit.kernel.Agent {
     public static final String COMMUNITY = "buzz";
     public static final String HORNET_ROLE = "hornet";
 
-    private static final int INITIAL_BEES_NB = 30000;
+    private static final int INITIAL_BEES_NB = 30;
     private ArrayList<AbstractAgent> queensList = new ArrayList<>();
     private ArrayList<AbstractAgent> beesList = new ArrayList<>(INITIAL_BEES_NB * 2);
     private ArrayList<AbstractAgent> hornetsList = new ArrayList<>();
@@ -108,7 +108,7 @@ public class BeeLauncher extends madkit.kernel.Agent {
 		else if (Math.random() < .3) {
 		    if (beesList.size() < 200000 && Runtime.getRuntime().freeMemory() > 100000) {
 			//modified this line to generate fewer bees 
-		    	launchBees((int) (Math.random() * 1500) + 5000);
+		    	launchBees((int)30);
 		    }
 		}
 		else {
@@ -128,18 +128,24 @@ public class BeeLauncher extends madkit.kernel.Agent {
     private void launchBees(int numberOfBees) {
 	getLogger().info(() -> "Launching " + numberOfBees + " bees");
 	//greatly optimizes the launching time
-	final List<AbstractAgent> beesBucket = launchAgentBucket(
-		Bee.class.getName(), 
-		numberOfBees, 
-		COMMUNITY + "," + SIMU_GROUP + "," + BEE_ROLE,
-		COMMUNITY + "," + SIMU_GROUP + "," + FOLLOWER_ROLE);
+	List<AbstractAgent> beesBucket = new ArrayList<>();
+	for(int i=0;i<numberOfBees;i++) {
+		beesBucket.add(new Bee(false));
+	}
+	launchAgentBucket(beesBucket,15,COMMUNITY + "," + SIMU_GROUP + "," + BEE_ROLE,
+			COMMUNITY + "," + SIMU_GROUP + "," + FOLLOWER_ROLE);
+//	//final List<AbstractAgent> beesBucket = launchAgentBucket(
+//		Bee.class.getName(), 
+//		numberOfBees, 
+//		COMMUNITY + "," + SIMU_GROUP + "," + BEE_ROLE,
+//		COMMUNITY + "," + SIMU_GROUP + "," + FOLLOWER_ROLE);
 	beesList.addAll(beesBucket);
     }
 
     private void launchQueens(int numberOfQueens) {
 	getLogger().info(() -> "Launching " + numberOfQueens + " queen bees");
 	for (int i = 0; i < numberOfQueens; i++) {
-		final QueenBee newQueen = new QueenBee();
+		final QueenBee newQueen = new QueenBee(false);
 	    launchAgent(newQueen);
 	    queensList.add(newQueen);
 	}
@@ -148,7 +154,7 @@ public class BeeLauncher extends madkit.kernel.Agent {
     private void launchHornets(int numberOfHornets) {
     	getLogger().info(() -> "Launching " + numberOfHornets + " hornets");
     	for (int i = 0; i < numberOfHornets; i++) {
-    		final Hornet newHornet = new Hornet();
+    		final Hornet newHornet = new Hornet(true);
     	    launchAgent(newHornet);
     	    hornetsList.add(newHornet);
     	}

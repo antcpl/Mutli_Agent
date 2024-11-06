@@ -40,13 +40,17 @@ public class QueenBee extends AbstractBee {
     private static final long serialVersionUID = -6999130646300839798L;
     static int border = 20;
 
+    public QueenBee(boolean testHornet) {
+		super(testHornet);
+	}
+    
     @Override
     protected void buzz() {
 	Message m = nextMessage();
 	if (m != null) {
 	    sendReply(m, new ObjectMessage<>(myInformation));
 	}
-
+	
 	super.buzz();
 
 	if (beeWorld != null) {
