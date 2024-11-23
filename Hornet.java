@@ -103,7 +103,7 @@ public class Hornet extends AbstractBee {
 
 	@Override
 	protected void end() {
-		System.out.println("Je suis décédé");
+		broadcastMessage(COMMUNITY, SIMU_GROUP, FOLLOWER_ROLE, new ObjectMessage<>(myInformation));
 	}
 
 	@Override

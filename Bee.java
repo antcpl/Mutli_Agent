@@ -55,9 +55,9 @@ public class Bee extends AbstractBee {
 
 	public Bee(boolean testHornet) {
 		super(testHornet);
-		this.inHornetRange=false;
+		this.inHornetRange = false;
 	}
-	
+
 	/** The "do it" method called by the activator */
 	@Override
 	public void buzz() {
@@ -75,37 +75,49 @@ public class Bee extends AbstractBee {
 		// if a bee get a message and this is a message from its leader then the leader
 		// is quiting
 		// so we reset the leader infos
-		
-		//fonctionne pas que des bees ou des abstractagent
+
+		// fonctionne pas que des bees ou des abstractagent
 //		System.out.println(m.getSender().getRole());
 //		System.out.println(m.getSender().getClass().getName());
 //		System.out.println(m.getSender().getClass().getTypeName());
 //		System.out.println(m.getSender().toString());
-		//System.out.println(m.getContent().getHornetBool());
+		// System.out.println(m.getContent().getHornetBool());
 
-		//System.out.println(m.getContent().getHornetBool());
-		
+		// System.out.println(m.getContent().getHornetBool());
+
 		if (m.getSender().equals(leader)) {// leader quitting
 			leader = null;
 			leaderInfo = null;
 		}
-		else if(m.getContent().getHornetBool()) {
-			newHornetInfos(m);
+//		else if(m.getContent().getHornetBool()) {
+//			newHornetInfos(m);
+//		}
+		//hornet quitting
+		else if (m.getSender().equals(hornet)) {
+			hornet = null;
+			hornetInfo = null;
 		}
-		// if it gets a message and this is not from its leader
+		// if it gets a message and this is not from its leader nor the current hornet
 		else {
 
-			// if the bee has no leader already set
-			if (leader == null) {
-				// if will follow a new leader
+			// if the message isn't from the hornet then it is from the queen 
+			if (!m.getContent().getHornetBool()) {
+				// if the bee has no leader already set
+				if (leader == null) {
+					// if will follow a new leader
 
-				followNewLeader(m);
-			}else {
-				// if the bee already has a leader set
-				List<AgentAddress> queens = getAgentsWithRole(COMMUNITY, SIMU_GROUP, QUEEN_ROLE);
-				if (queens != null && generator.nextDouble() < (1.0 / queens.size())) {// change leader randomly
 					followNewLeader(m);
+				} else {
+					// if the bee already has a leader set
+					List<AgentAddress> queens = getAgentsWithRole(COMMUNITY, SIMU_GROUP, QUEEN_ROLE);
+					if (queens != null && generator.nextDouble() < (1.0 / queens.size())) {// change leader randomly
+						followNewLeader(m);
+					}
 				}
+
+			}
+			else {
+				newHornetInfos(m);
 			}
 		}
 	}
@@ -136,21 +148,19 @@ public class Bee extends AbstractBee {
 			dtx = hornetLocation.x - location.x;
 			dty = hornetLocation.y - location.y;
 
-			
 //			System.out.println(beeWorld.getWidth()/10);
 //			System.out.println(beeWorld.getHeight()/10);
 //			
 //			System.out.println(Math.abs(dtx));
 //			System.out.println(Math.abs(dty));
 //			
-			
-			if (Math.sqrt(Math.pow(dtx, 2)+Math.pow(dty, 2)) < (beeWorld.getWidth()/50)) {
-				if(inHornetRange==false) {
-					//we enter in the hornet range we send a message to him
+
+			if (Math.sqrt(Math.pow(dtx, 2) + Math.pow(dty, 2)) < (beeWorld.getWidth() / 50)) {
+				if (inHornetRange == false) {
+					// we enter in the hornet range we send a message to him
 					sendMessage(hornet, new IntegerMessage(1));
-					inHornetRange=true;
+					inHornetRange = true;
 				}
-		
 
 				dX = 0;
 				dY = 0;
@@ -173,11 +183,11 @@ public class Bee extends AbstractBee {
 //					}
 //				}
 			} else {
-				//we were in the hornet range but not anymore, we send a message to him
-				if(inHornetRange==true) {
-					//we exit the hornet range
+				// we were in the hornet range but not anymore, we send a message to him
+				if (inHornetRange == true) {
+					// we exit the hornet range
 					sendMessage(hornet, new IntegerMessage(0));
-					inHornetRange=false;
+					inHornetRange = false;
 				}
 				if (leaderInfo != null) {
 					final Point leaderLocation = leaderInfo.getCurrentPosition();
@@ -240,10 +250,10 @@ public class Bee extends AbstractBee {
 		}
 		return 0;
 	}
-	
+
 	@Override
 	protected void end() {
-		if(inHornetRange && (hornetInfo != null)) {
+		if (inHornetRange && (hornetInfo != null)) {
 			System.out.println("J'envoie un message de mort au frelon");
 			sendMessage(hornet, new IntegerMessage(3));
 		}
