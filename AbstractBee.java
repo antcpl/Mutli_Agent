@@ -123,7 +123,7 @@ class BeeInformation {
     	currentPosition = new Point();
     	previousPosition = new Point();
     	beeColor = Color.getHSBColor(AbstractBee.generator.nextFloat(), 1.0f, 1.0f);
-    	testHornet=true;
+    	testHornet=test_hornet;
         }
 
     /**

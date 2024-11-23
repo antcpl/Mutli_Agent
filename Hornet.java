@@ -39,13 +39,14 @@ import madkit.message.ObjectMessage;
  */
 public class Hornet extends AbstractBee {
 
-	//private static final long serialVersionUID = -6999130646300839798L;
+	// private static final long serialVersionUID = -6999130646300839798L;
 	static int border = 20;
+	public int beesInRange = 0;
 
 	public Hornet(boolean testHornet) {
 		super(testHornet);
 	}
-	
+
 	@Override
 	protected void buzz() {
 //	Message m = nextMessage();
@@ -66,18 +67,28 @@ public class Hornet extends AbstractBee {
 				location.y += (dY);
 			}
 		}
-		int bee_position = 0;
 		IntegerMessage m = (IntegerMessage) nextMessage();
 		if (m != null) {
-			bee_position = m.getContent();
-			if(bee_position<0.5) {
-				sendMessage(m.getSender(),new Message());
-				try {
-					Thread.sleep(3000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			System.out.println("" + beesInRange);
+			if (m.getContent().equals(1)) {
+				beesInRange++;
+				System.out.println("Une abeille rentre dans ma range");
+
+			} else if (m.getContent().equals(0)) {
+				if (beesInRange > 0) {
+					beesInRange--;
+					System.out.println("Une abeille sort de ma range");
+				} else {
+					System.out.println("Erreur beesInRange negatif");
 				}
+			} else if (m.getContent().equals(3)) {
+				if (beesInRange > 0) {
+					beesInRange--;
+					System.out.println("Mort d'une abeille elle sort de ma range");
+				}
+			}
+			if (beesInRange > 30) {
+				killAgent(this);
 			}
 		}
 	}
@@ -92,6 +103,7 @@ public class Hornet extends AbstractBee {
 
 	@Override
 	protected void end() {
+		System.out.println("Je suis décédé");
 	}
 
 	@Override

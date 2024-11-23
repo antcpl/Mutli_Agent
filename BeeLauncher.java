@@ -44,7 +44,7 @@ public class BeeLauncher extends madkit.kernel.Agent {
     public static final String COMMUNITY = "buzz";
     public static final String HORNET_ROLE = "hornet";
 
-    private static final int INITIAL_BEES_NB = 30;
+    private static final int INITIAL_BEES_NB = 3000;
     private ArrayList<AbstractAgent> queensList = new ArrayList<>();
     private ArrayList<AbstractAgent> beesList = new ArrayList<>(INITIAL_BEES_NB * 2);
     private ArrayList<AbstractAgent> hornetsList = new ArrayList<>();

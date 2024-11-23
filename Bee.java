@@ -45,6 +45,7 @@ public class Bee extends AbstractBee {
 	AgentAddress leader = null;
 	AgentAddress hornet = null;
 	BeeInformation hornetInfo = null;
+	boolean inHornetRange;
 
 	@Override
 	public void activate() {
@@ -54,6 +55,7 @@ public class Bee extends AbstractBee {
 
 	public Bee(boolean testHornet) {
 		super(testHornet);
+		this.inHornetRange=false;
 	}
 	
 	/** The "do it" method called by the activator */
@@ -81,6 +83,8 @@ public class Bee extends AbstractBee {
 //		System.out.println(m.getSender().toString());
 		//System.out.println(m.getContent().getHornetBool());
 
+		//System.out.println(m.getContent().getHornetBool());
+		
 		if (m.getSender().equals(leader)) {// leader quitting
 			leader = null;
 			leaderInfo = null;
@@ -90,11 +94,13 @@ public class Bee extends AbstractBee {
 		}
 		// if it gets a message and this is not from its leader
 		else {
+
 			// if the bee has no leader already set
-			if (leader == null)
+			if (leader == null) {
 				// if will follow a new leader
+
 				followNewLeader(m);
-			else {
+			}else {
 				// if the bee already has a leader set
 				List<AgentAddress> queens = getAgentsWithRole(COMMUNITY, SIMU_GROUP, QUEEN_ROLE);
 				if (queens != null && generator.nextDouble() < (1.0 / queens.size())) {// change leader randomly
@@ -138,10 +144,16 @@ public class Bee extends AbstractBee {
 //			System.out.println(Math.abs(dty));
 //			
 			
-			if (Math.abs(dtx) < (beeWorld.getWidth()/10) && Math.abs(dty) < (beeWorld.getHeight()/10)) {
+			if (Math.sqrt(Math.pow(dtx, 2)+Math.pow(dty, 2)) < (beeWorld.getWidth()/50)) {
+				if(inHornetRange==false) {
+					//we enter in the hornet range we send a message to him
+					sendMessage(hornet, new IntegerMessage(1));
+					inHornetRange=true;
+				}
+		
+
 				dX = 0;
 				dY = 0;
-				//System.out.println("coucou");
 				// send a message to the hornet
 //				sendMessage(hornet, new IntegerMessage(dtx + dty));
 //				ObjectMessage<BeeInformation> m = (ObjectMessage<BeeInformation>) nextMessage();
@@ -161,7 +173,12 @@ public class Bee extends AbstractBee {
 //					}
 //				}
 			} else {
-
+				//we were in the hornet range but not anymore, we send a message to him
+				if(inHornetRange==true) {
+					//we exit the hornet range
+					sendMessage(hornet, new IntegerMessage(0));
+					inHornetRange=false;
+				}
 				if (leaderInfo != null) {
 					final Point leaderLocation = leaderInfo.getCurrentPosition();
 					dtx = leaderLocation.x - location.x;
@@ -222,5 +239,13 @@ public class Bee extends AbstractBee {
 			return beeWorld.getBeeVelocity().getValue();
 		}
 		return 0;
+	}
+	
+	@Override
+	protected void end() {
+		if(inHornetRange && (hornetInfo != null)) {
+			System.out.println("J'envoie un message de mort au frelon");
+			sendMessage(hornet, new IntegerMessage(3));
+		}
 	}
 }
