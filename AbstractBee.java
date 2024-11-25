@@ -112,6 +112,7 @@ class BeeInformation {
     private final Point currentPosition, previousPosition;
     private Color beeColor;
 	private boolean testHornet=false;
+	private boolean release=false;
 
 //    public BeeInformation() {
 //	currentPosition = new Point();
@@ -139,7 +140,24 @@ class BeeInformation {
     public boolean getHornetBool() {
 	return testHornet;
     }
+    
+    /**
+     * @return the currentPosition
+     */
+    public void setReleaseBool() {
+	this.release=true;
+    }
+    
 
+    /**
+     * @return the currentPosition
+     */
+    public boolean getReleaseBool() {
+	return release;
+    }
+    
+    
+    
     /**
      * @return the previousPosition
      */

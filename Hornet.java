@@ -42,6 +42,7 @@ public class Hornet extends AbstractBee {
 	// private static final long serialVersionUID = -6999130646300839798L;
 	static int border = 20;
 	public int beesInRange = 0;
+	public int stopValue = 0;
 
 	public Hornet(boolean testHornet) {
 		super(testHornet);
@@ -69,25 +70,42 @@ public class Hornet extends AbstractBee {
 		}
 		IntegerMessage m = (IntegerMessage) nextMessage();
 		if (m != null) {
-			System.out.println("" + beesInRange);
+			System.out.println("[H] beesInRange value =" + beesInRange);
 			if (m.getContent().equals(1)) {
+				//counter for number of bees in the range for potential kill
 				beesInRange++;
-				System.out.println("Une abeille rentre dans ma range");
+				//handle the stop for the selected bee
+				if(stopValue==0) {
+					System.out.println("[H] I have selected the bee which I want to kill");
+					sendMessage(m.getSender(), new ObjectMessage<>(null));
+					stopValue=1;
+				}
+//				else {
+//					myInformation.setReleaseBool();
+//					sendMessage(m.getSender(), new ObjectMessage(myInformation));
+//				}
+//				System.out.println("Une abeille rentre dans ma range");
 
 			} else if (m.getContent().equals(0)) {
 				if (beesInRange > 0) {
 					beesInRange--;
-					System.out.println("Une abeille sort de ma range");
+//					System.out.println("Une abeille sort de ma range");
 				} else {
 					System.out.println("Erreur beesInRange negatif");
 				}
 			} else if (m.getContent().equals(3)) {
 				if (beesInRange > 0) {
 					beesInRange--;
-					System.out.println("Mort d'une abeille elle sort de ma range");
+//					System.out.println("Mort d'une abeille elle sort de ma range");
 				}
 			}
-			if (beesInRange > 30) {
+			else if(m.getContent().equals(4)) {
+				stopValue=0;
+				System.out.println("[H] I killed the bee, begin to move again");
+				//as we just kill the bee without make it send a message, we have to update the counter
+				beesInRange--;
+			}
+			if (beesInRange > 15) {
 				killAgent(this);
 			}
 		}
@@ -117,9 +135,16 @@ public class Hornet extends AbstractBee {
 	@Override
 	protected void computeNewVelocities() {
 		if (beeWorld != null) {
-			int acc = beeWorld.getHornetAcceleration().getValue();
-			dX += randomFromRange(acc);
-			dY += randomFromRange(acc);
+			if(stopValue==1) {
+				System.out.println("[H] Killing the bee, stop moving");
+				dX=0;
+				dY=0;
+			}
+			else {
+				int acc = beeWorld.getHornetAcceleration().getValue();
+				dX += randomFromRange(acc);
+				dY += randomFromRange(acc);
+			}
 		}
 	}
 
