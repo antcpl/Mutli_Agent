@@ -77,11 +77,12 @@ public class Bee extends AbstractBee {
 			leader = null;
 			leaderInfo = null;
 		}
-		// hornet quitting
 		else if (m.getSender().equals(hornet)) {
+			// if null message, the bee is selected by the hornet to be killed
 			if (m.getContent() == null) {
 				dying = true;
 			} else {
+				// if not null message, the hornet is going to die so it empties its structure in all the bees
 				hornet = null;
 				hornetInfo = null;
 			}
@@ -105,6 +106,7 @@ public class Bee extends AbstractBee {
 				}
 
 			} else {
+				// message from the hornet so we create its structure into bees
 				newHornetInfos(m);
 			}
 		}
@@ -135,28 +137,18 @@ public class Bee extends AbstractBee {
 			final Point hornetLocation = hornetInfo.getCurrentPosition();
 			dtx = hornetLocation.x - location.x;
 			dty = hornetLocation.y - location.y;
+		
 
-//			System.out.println(beeWorld.getWidth()/10);
-//			System.out.println(beeWorld.getHeight()/10);
-//			
-//			System.out.println(Math.abs(dtx));
-//			System.out.println(Math.abs(dty));
-//			
-
-			if (dying) {
+			if (dying) {//if dying set, this is the selected bee
 				dX = 0;
 				dY = 0;
 				System.out.println("[B] The hornet wants to kill me");
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				if(this!=null) {
+
+				if(this.isAlive()) {
 					killAgent(this);
 				}
 			} else {
+				//checking the distance to the hornet
 				if (Math.sqrt(Math.pow(dtx, 2) + Math.pow(dty, 2)) < (beeWorld.getWidth() / 100)) {
 					if (inHornetRange == false) {
 						// we enter in the hornet range we send a message to him
@@ -240,8 +232,8 @@ public class Bee extends AbstractBee {
 			System.out.println("[B] Sending a message to the hornet telling him I will die and I was in the range");
 			sendMessage(hornet, new IntegerMessage(3));
 		}
-		else if(inHornetRange && (hornetInfo != null) && dying) {
-			sendMessage(hornet, new IntegerMessage(4));
-		}
+//		else if(inHornetRange && (hornetInfo != null) && dying) {
+//			sendMessage(hornet, new IntegerMessage(4));
+//		}
 	}
 }

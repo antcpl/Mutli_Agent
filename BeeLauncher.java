@@ -44,7 +44,7 @@ public class BeeLauncher extends madkit.kernel.Agent {
     public static final String COMMUNITY = "buzz";
     public static final String HORNET_ROLE = "hornet";
 
-    private static final int INITIAL_BEES_NB = 1000;
+    private static final int INITIAL_BEES_NB = 500;
     private ArrayList<AbstractAgent> queensList = new ArrayList<>();
     private ArrayList<AbstractAgent> beesList = new ArrayList<>(INITIAL_BEES_NB * 2);
     private ArrayList<AbstractAgent> hornetsList = new ArrayList<>();
@@ -112,7 +112,7 @@ public class BeeLauncher extends madkit.kernel.Agent {
 		    }
 		}
 		else {
-		    killBees(false, (int) (Math.random() * 500) + 1);
+		    killBees(false, (int) (Math.random() * 100) + 1);
 		}
 	    }
 	}
