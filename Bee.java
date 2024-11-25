@@ -24,6 +24,7 @@ import static madkit.bees.BeeLauncher.HORNET_ROLE;
 import static madkit.bees.BeeLauncher.SIMU_GROUP;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -43,9 +44,9 @@ public class Bee extends AbstractBee {
 	private static final long serialVersionUID = -2393301912353816186L;
 	BeeInformation leaderInfo = null;
 	AgentAddress leader = null;
-	AgentAddress hornet = null;
-	BeeInformation hornetInfo = null;
-	boolean inHornetRange;
+	ArrayList<AgentAddress> hornets = new ArrayList<>();
+	ArrayList<BeeInformation> hornetsInfo = new ArrayList<>();
+	ArrayList<Boolean> inHornetRange = new ArrayList<>();
 	boolean dying = false;
 
 	@Override
@@ -56,7 +57,8 @@ public class Bee extends AbstractBee {
 
 	public Bee(boolean testHornet) {
 		super(testHornet);
-		this.inHornetRange = false;
+		for (int i = 0; i < 4; i++)
+			this.inHornetRange.add(false);
 	}
 
 	/** The "do it" method called by the activator */
@@ -76,16 +78,19 @@ public class Bee extends AbstractBee {
 		if (m.getSender().equals(leader)) {// leader quitting
 			leader = null;
 			leaderInfo = null;
-		}
-		else if (m.getSender().equals(hornet)) {
+		} else if (hornets.contains(m.getSender())) {
 			// if null message, the bee is selected by the hornet to be killed
 			if (m.getContent() == null) {
 				dying = true;
 			} else {
-				// if not null message, the hornet is going to die so it empties its structure in all the bees
-				hornet = null;
-				hornetInfo = null;
+				// if not null message, the hornet is going to die so it empties its structure
+				// in all the bees
+				int indexHornet = hornets.indexOf(m.getSender());
+				hornets.remove(indexHornet);
+				hornetsInfo.remove(indexHornet);
 			}
+		} else if (!hornets.contains(m.getSender()) && m.getContent().getHornetBool()) {
+			newHornetInfos(m);
 		}
 		// if it gets a message and this is not from its leader nor the current hornet
 		else {
@@ -105,9 +110,10 @@ public class Bee extends AbstractBee {
 					}
 				}
 
-			} else {
-				// message from the hornet so we create its structure into bees
-				newHornetInfos(m);
+//			} else {
+//				// message from the hornet so we create its structure into bees
+//				newHornetInfos(m);
+//			}
 			}
 		}
 	}
@@ -122,8 +128,8 @@ public class Bee extends AbstractBee {
 	}
 
 	private void newHornetInfos(ObjectMessage<BeeInformation> hornetMessage) {
-		hornet = hornetMessage.getSender();
-		hornetInfo = hornetMessage.getContent();
+		hornets.add(hornetMessage.getSender());
+		hornetsInfo.add(hornetMessage.getContent());
 	}
 
 	@Override
@@ -133,60 +139,62 @@ public class Bee extends AbstractBee {
 		int dtx;
 		int dty;
 
-		if (hornetInfo != null) {
-			final Point hornetLocation = hornetInfo.getCurrentPosition();
-			dtx = hornetLocation.x - location.x;
-			dty = hornetLocation.y - location.y;
-		
+		if (hornets.size() > 0) {
+			for (int i = 0; i < hornets.size()-1; i++) {
 
-			if (dying) {//if dying set, this is the selected bee
-				dX = 0;
-				dY = 0;
-				System.out.println("[B] The hornet wants to kill me");
+				final Point hornetLocation = hornetsInfo.get(i).getCurrentPosition();
+				dtx = hornetLocation.x - location.x;
+				dty = hornetLocation.y - location.y;
 
-				if(this.isAlive()) {
-					killAgent(this);
-				}
-			} else {
-				//checking the distance to the hornet
-				if (Math.sqrt(Math.pow(dtx, 2) + Math.pow(dty, 2)) < (beeWorld.getWidth() / 100)) {
-					if (inHornetRange == false) {
-						// we enter in the hornet range we send a message to him
-						sendMessage(hornet, new IntegerMessage(1));
-						inHornetRange = true;
+				if (dying) {// if dying set, this is the selected bee
+					dX = 0;
+					dY = 0;
+					System.out.println("[B] The hornet wants to kill me");
+
+					if (this.isAlive()) {
+						killAgent(this);
 					}
-
 				} else {
-					// we were in the hornet range but not anymore, we send a message to him
-					if (inHornetRange == true) {
-						// we exit the hornet range
-						sendMessage(hornet, new IntegerMessage(0));
-						inHornetRange = false;
-					}
-					if (leaderInfo != null) {
-						final Point leaderLocation = leaderInfo.getCurrentPosition();
-						dtx = leaderLocation.x - location.x;
-						dty = leaderLocation.y - location.y;
-					} else {
-						dtx = generator.nextInt(5);
-						dty = generator.nextInt(5);
-						if (generator.nextBoolean()) {
-							dtx = -dtx;
-							dty = -dty;
+					// checking the distance to the hornet
+					if (Math.sqrt(Math.pow(dtx, 2) + Math.pow(dty, 2)) < (beeWorld.getWidth() / 50)) {
+						if (inHornetRange.get(i) == false) {
+							// we enter in the hornet range we send a message to him
+							sendMessage(hornets.get(i), new IntegerMessage(1));
+							inHornetRange.set(i, true);
 						}
-					}
 
-					int acc = 0;
-					if (beeWorld != null) {
-						acc = beeWorld.getBeeAcceleration().getValue();
+					} else {
+						// we were in the hornet range but not anymore, we send a message to him
+						if (inHornetRange.get(i) == true) {
+							// we exit the hornet range
+							sendMessage(hornets.get(i), new IntegerMessage(0));
+							inHornetRange.set(i, false);
+						}
+						if (leaderInfo != null) {
+							final Point leaderLocation = leaderInfo.getCurrentPosition();
+							dtx = leaderLocation.x - location.x;
+							dty = leaderLocation.y - location.y;
+						} else {
+							dtx = generator.nextInt(5);
+							dty = generator.nextInt(5);
+							if (generator.nextBoolean()) {
+								dtx = -dtx;
+								dty = -dty;
+							}
+						}
+
+						int acc = 0;
+						if (beeWorld != null) {
+							acc = beeWorld.getBeeAcceleration().getValue();
+						}
+						int dist = Math.abs(dtx) + Math.abs(dty);
+						if (dist == 0)
+							dist = 1; // avoid dividing by zero
+						// the randomFromRange adds some extra jitter to prevent the bees from flying in
+						// formation
+						dX += ((dtx * acc) / dist) + randomFromRange(2);
+						dY += ((dty * acc) / dist) + randomFromRange(2);
 					}
-					int dist = Math.abs(dtx) + Math.abs(dty);
-					if (dist == 0)
-						dist = 1; // avoid dividing by zero
-					// the randomFromRange adds some extra jitter to prevent the bees from flying in
-					// formation
-					dX += ((dtx * acc) / dist) + randomFromRange(2);
-					dY += ((dty * acc) / dist) + randomFromRange(2);
 				}
 			}
 		} else {
@@ -228,10 +236,15 @@ public class Bee extends AbstractBee {
 
 	@Override
 	protected void end() {
-		if (inHornetRange && (hornetInfo != null) && !dying) {
-			System.out.println("[B] Sending a message to the hornet telling him I will die and I was in the range");
-			sendMessage(hornet, new IntegerMessage(3));
+		for(int i=0;i<inHornetRange.size()-1;i++) {
+			if(inHornetRange.get(i) && !dying) {
+				sendMessage(hornets.get(i), new IntegerMessage(3));
+			}
 		}
+//		if (inHornetRange && (hornetInfo != null) && !dying) {
+//			System.out.println("[B] Sending a message to the hornet telling him I will die and I was in the range");
+//			sendMessage(hornet, new IntegerMessage(3));
+//		}
 //		else if(inHornetRange && (hornetInfo != null) && dying) {
 //			sendMessage(hornet, new IntegerMessage(4));
 //		}
